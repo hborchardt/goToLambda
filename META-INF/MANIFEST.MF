@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: GoToLambda
 Bundle-SymbolicName: goToLambda;singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.0.1.qualifier
 Require-Bundle: org.eclipse.ui,
  org.eclipse.jdt;bundle-version="3.19.400",
  org.eclipse.jdt.ui;bundle-version="3.32.0",
