@@ -91,7 +91,7 @@ public class GoToLambdaAction extends OpenVariableConcreteTypeAction {
 			var invokestaticBytecodeIdx = -1;
 			for (int i = 0; i < bytecode.length;) {
 				var opcode = JvmOpcode.find(bytecode[i]);
-				if (opcode == JvmOpcode.INVOKESTATIC || opcode == JvmOpcode.INVOKEDYNAMIC) {
+				if (opcode == JvmOpcode.INVOKESTATIC || opcode == JvmOpcode.INVOKEDYNAMIC || opcode == JvmOpcode.INVOKEVIRTUAL) {
 					invokestaticBytecodeIdx = i;
 					break;
 				}
@@ -110,15 +110,20 @@ public class GoToLambdaAction extends OpenVariableConcreteTypeAction {
 			// Chase the MethodRef until we get the name of the static function.
 			var methodRefIdx = readUint16(bytecode, invokestaticBytecodeIdx + 1);
 			var methodRef = cpEntries.get(methodRefIdx);
-			var nameAndTypeIdx = readUint16(cp, methodRef.startIdx + 2);
-			var nameAndType = cpEntries.get(nameAndTypeIdx);
-			var nameIdx = readUint16(cp, nameAndType.startIdx);
-			var nameEntry = cpEntries.get(nameIdx);
-			var name = new String(cp, nameEntry.startIdx + 2, nameEntry.len - 2);
+			var clsIdx = readUint16(cp, methodRef.startIdx);
+			var cls = cpEntries.get(clsIdx);
+			var clsNameIdx = readUint16(cp, cls.startIdx);
+			var clsNameEntry = cpEntries.get(clsNameIdx);
+			var clsName = new String(cp, clsNameEntry.startIdx + 2, clsNameEntry.len - 2);
+			var methodNameAndTypeIdx = readUint16(cp, methodRef.startIdx + 2);
+			var methodNameAndType = cpEntries.get(methodNameAndTypeIdx);
+			var methodNameIdx = readUint16(cp, methodNameAndType.startIdx);
+			var methodNameEntry = cpEntries.get(methodNameIdx);
+			var methodName = new String(cp, methodNameEntry.startIdx + 2, methodNameEntry.len - 2);
 			// we know the defining class of the lambda from the name of the lambda type
-			var containingClass = underlyingType.name().split("\\$\\$")[0];
+			//var containingClass = underlyingType.name().split("\\$\\$")[0];
 
-			return underlyingType.virtualMachine().classesByName(containingClass).get(0).methodsByName(name).get(0)
+			return underlyingType.virtualMachine().classesByName(clsName.replace('/','.')).get(0).methodsByName(methodName).get(0)
 					.location();
 		} catch (RuntimeException e) {
 			e.printStackTrace();
